@@ -1,52 +1,59 @@
 # 📺 Cobros Streaming
 
-App web en **Google Apps Script** para llevar el control de cobros de cuentas de streaming (Netflix, Disney+, Max, Spotify…), con recordatorios por **WhatsApp** y cálculo automático de **meses acumulados**.
+App instalable (PWA) para llevar el control de cobros de cuentas de streaming (Netflix, Disney+, Max, Spotify…), con recordatorios por **WhatsApp** y cálculo automático de **meses acumulados**.
 
 > Creada y de autoría del Ing. Moisés Mendoza.
 
-**Abrir la app:** https://moydominguez044-stack.github.io/-CobroStreaming/ (muestra la app de Apps Script dentro de la página; si el navegador no deja iniciar sesión dentro de ella, usa el botón *Abrir en Google*)
+**App:** https://moydominguez044-stack.github.io/-CobroStreaming/
+
+## Cómo está armada
+
+- **La app** (`index.html`, `manifest.webmanifest`, `sw.js`, `icons/`) vive en **GitHub Pages**. Se instala en el celular como cualquier app, abre a pantalla completa y muestra los últimos datos aunque no haya señal.
+- **El servidor de datos** (`apps-script/Code.gs`) es un Google Apps Script que guarda todo en una hoja de Google en tu Drive. La app se conecta a él con la URL `/exec` y una **clave**.
 
 ## Qué hace
 
 - **Cobros del día:** muestra quién está vencido, a quién le vence hoy y a quién le vence pronto, con el total a cobrar.
 - **Meses acumulados:** si un cliente debe varios meses, la app los cuenta y los pone en el mensaje, por ejemplo *"Netflix (Perfil 2): 2 meses (sep, oct) — C$ 300"*.
-- **WhatsApp semiautomático:** el botón verde abre WhatsApp con el mensaje ya escrito para ese cliente. Solo hay que tocar *Enviar*. Queda marcado como "Avisado hoy".
-- **Resumen diario por correo:** cada mañana llega a tu Gmail la lista de cobros del día con un botón de WhatsApp por cliente. Desde el celular es un toque por cliente.
-- **Precios:** el precio se define por servicio. Si cambia, se actualiza en todas las cuentas. También se puede poner un precio especial por cuenta.
+- **WhatsApp semiautomático:** el botón verde abre WhatsApp con el mensaje ya escrito. Queda marcado como "Avisado hoy".
+- **Resumen diario por correo:** cada mañana llega a tu Gmail la lista de cobros del día con un botón de WhatsApp por cliente.
+- **Precios:** el precio se define por servicio y se puede poner un precio especial por cuenta.
 - **Pagos:** se registra cuántos meses pagó y la próxima fecha de pago se adelanta sola. Los pagos se pueden anular.
 - **Mensaje editable** con variables `{nombre}`, `{detalle}`, `{total}`, `{meses}`, `{negocio}`.
-- **Para compartir:** cada persona que abre la app tiene sus propios datos en una hoja de Google de su propio Drive. Nadie ve los clientes de otro.
 
-## Instalación
+## 1. Servidor (Apps Script)
 
-1. Entra a [script.google.com](https://script.google.com) y crea un **Proyecto nuevo**. Ponle de nombre *Cobros Streaming*.
-2. Pega el contenido de `apps-script/Code.gs` en el archivo `Código.gs`.
-3. Crea un archivo **HTML** llamado exactamente `Index` y pega `apps-script/Index.html`.
-4. En **Configuración del proyecto** ⚙️, activa *"Mostrar el archivo de manifiesto appsscript.json"* y reemplaza su contenido con `apps-script/appsscript.json`.
-5. Ve a **Implementar → Nueva implementación → Aplicación web**:
-   - *Ejecutar como:* **Usuario que accede a la aplicación web**
-   - *Quién tiene acceso:* **Cualquier usuario con cuenta de Google**
-6. Copia la URL y ábrela en el celular. Puedes agregarla a la pantalla de inicio.
+1. En [script.google.com](https://script.google.com), abre o crea el proyecto *Cobros Streaming*.
+2. Pega `apps-script/Code.gs` en `Código.gs`. Si existe un archivo HTML `Index` de una versión anterior, **bórralo**.
+3. En **Configuración del proyecto** ⚙️, activa *"Mostrar el archivo de manifiesto"* y pega `apps-script/appsscript.json`.
+4. Ve a **Implementar → Administrar implementaciones → ✏️ editar**:
+   - *Versión:* **Nueva versión**
+   - *Ejecutar como:* **Yo**
+   - *Quién tiene acceso:* **Cualquier usuario**
 
-La primera vez Google pide permisos. Son para crear tu hoja de datos, mandarte el resumen por correo y programar el resumen diario.
+   Así se conserva la misma URL `/exec`. Si es la primera vez, usa *Nueva implementación → Aplicación web* con esas mismas opciones.
+5. Autoriza los permisos que pide Google.
 
-### Compartir con amigos
+## 2. Instalar en el celular
 
-Mándales la misma URL. Cada uno entra con su cuenta de Google y la app le crea su propia hoja de datos.
+1. Abre https://moydominguez044-stack.github.io/-CobroStreaming/ en **Chrome** (Android) o **Safari** (iPhone).
+2. La primera vez pide la **URL del servidor**, que ya viene puesta, y una **clave**. La clave que escribas la primera vez queda como la clave de tu servidor; guárdala.
+3. Instálala:
+   - **Android (Chrome):** menú ⋮ → **Instalar app** o **Agregar a pantalla principal**.
+   - **iPhone (Safari):** botón Compartir → **Agregar a inicio**.
 
-## Uso rápido
+¿Olvidaste la clave? En el editor de Apps Script ejecuta la función `reiniciarClave`. La siguiente clave que uses en la app será la nueva.
 
-1. **Servicios:** pon el precio mensual de cada servicio.
-2. **Clientes → +:** agrega el cliente con su WhatsApp. El número de 8 dígitos lleva +505 automáticamente.
-3. **Agregar cuenta:** elige el servicio, el perfil y la fecha de pago. Si pones una fecha pasada, la app calcula los meses que debe.
-4. **Cobros:** toca *Recordar por WhatsApp*. Cuando te pague, toca *Pago*.
-5. **Ajustes:** activa el *Resumen diario por correo* y elige la hora.
+## Compartir con amigos
+
+- **Para que usen tus datos** (por ejemplo, alguien que te ayuda a cobrar): dales el enlace de la app y tu clave.
+- **Para que tengan sus propios datos:** cada uno hace su copia del script, la implementa (paso 1) y en la app toca **Ajustes → Servidor → Cambiar** para pegar su propia URL `/exec` y crear su clave.
 
 ## Estructura
 
 | Archivo | Contenido |
 |---|---|
-| `apps-script/Code.gs` | Datos en Google Sheets, cálculo de vencimientos y meses acumulados, mensajes, resumen diario |
-| `apps-script/Index.html` | Interfaz móvil: Cobros, Clientes, Servicios, Pagos, Ajustes |
+| `index.html` | La app: Cobros, Clientes, Servicios, Pagos, Ajustes |
+| `manifest.webmanifest`, `sw.js`, `icons/` | Lo que la hace instalable y le permite abrir sin señal |
+| `apps-script/Code.gs` | Servidor: API con clave, datos en Google Sheets, meses acumulados, mensajes, resumen diario |
 | `apps-script/appsscript.json` | Zona horaria (America/Managua) y configuración de la aplicación web |
-| `index.html` | Página de GitHub Pages que muestra la app dentro (iframe) |

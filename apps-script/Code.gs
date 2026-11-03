@@ -3,10 +3,18 @@
  * Control de cobros de cuentas de streaming con recordatorios por WhatsApp.
  * Creada y de autoría del Ing. Moisés Mendoza.
  *
- * Cada persona que abre la app (implementada como "Ejecutar como: usuario que accede")
- * obtiene su propia hoja de datos en su Google Drive, así puede compartirse con amigos
- * sin que nadie vea los datos de otro.
+ * Este script es el SERVIDOR de datos (API). La app que se instala en el celular está en
+ * GitHub Pages (index.html) y se conecta aquí con la URL /exec y una clave.
+ *
+ * Implementar como Aplicación web:  Ejecutar como: Yo  ·  Acceso: Cualquier usuario.
+ * La clave protege los datos: la primera vez que la app se conecta, la clave que escribas
+ * queda guardada como la clave del servidor. Para cambiarla, ejecuta reiniciarClave() en el editor.
+ *
+ * Cada amigo que quiera sus propios datos hace su propia copia de este script y conecta la
+ * app con su URL y su clave.
  */
+
+const APP_URL = 'https://moydominguez044-stack.github.io/-CobroStreaming/';
 
 const APP_NAME = 'Cobros Streaming';
 const SCHEMA_VERSION = '1';
@@ -44,11 +52,65 @@ const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'o
  * Web app
  * ========================================================= */
 
+/** Abrir la URL /exec en el navegador lleva a la app instalable. */
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle(APP_NAME)
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  return HtmlService.createHtmlOutput(
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<div style="font-family:system-ui,sans-serif;text-align:center;padding:40px 16px">' +
+    '<h2>📺 ' + APP_NAME + '</h2><p>Este es el servidor de datos. La app está aquí:</p>' +
+    '<p><a target="_top" style="background:#4338ca;color:#fff;padding:12px 18px;border-radius:12px;text-decoration:none;font-weight:700" href="' + APP_URL + '">Abrir la app</a></p></div>'
+  ).setTitle(APP_NAME);
+}
+
+const API_FUNCIONES = {
+  getData: getData, saveServicio: saveServicio, deleteServicio: deleteServicio,
+  saveCliente: saveCliente, deleteCliente: deleteCliente, saveSuscripcion: saveSuscripcion,
+  deleteSuscripcion: deleteSuscripcion, registrarPagos: registrarPagos, deletePago: deletePago,
+  marcarAviso: marcarAviso, saveConfig: saveConfig, activarResumen: activarResumen
+};
+
+/**
+ * API JSON. Cuerpo: {"key": "...", "fn": "getData", "args": [...]}
+ * Responde {"ok": true, "data": ...} o {"ok": false, "error": "..."}.
+ */
+function doPost(e) {
+  let res;
+  try {
+    const req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    validarClave_(req.key);
+    const fn = API_FUNCIONES[req.fn];
+    if (!fn) throw new Error('Función no permitida: ' + req.fn);
+    res = { ok: true, data: fn.apply(null, req.args || []) };
+  } catch (err) {
+    res = { ok: false, error: String(err && err.message || err) };
+  }
+  return ContentService.createTextOutput(JSON.stringify(res)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function hashClave_(k) {
+  return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 'cobros|' + k));
+}
+
+function validarClave_(key) {
+  key = String(key || '').trim();
+  if (key.length < 4) throw new Error('CLAVE: escribe una clave de al menos 4 caracteres.');
+  const props = PropertiesService.getScriptProperties();
+  const guardada = props.getProperty('API_KEY_HASH');
+  if (!guardada) {
+    // Primera conexión: esta clave queda como la clave del servidor.
+    const lock = LockService.getScriptLock();
+    lock.waitLock(10000);
+    try {
+      if (!props.getProperty('API_KEY_HASH')) props.setProperty('API_KEY_HASH', hashClave_(key));
+    } finally { lock.releaseLock(); }
+    return;
+  }
+  if (guardada !== hashClave_(key)) throw new Error('CLAVE: la clave no es correcta.');
+}
+
+/** Ejecútalo desde el editor si olvidaste la clave: la próxima clave que uses en la app será la nueva. */
+function reiniciarClave() {
+  PropertiesService.getScriptProperties().deleteProperty('API_KEY_HASH');
 }
 
 /* =========================================================
@@ -538,8 +600,7 @@ function resumenDiario() {
 
   const etiquetas = { vencido: 'Vencido', hoy: 'Vence hoy', proximo: 'Por vencer' };
   const colores = { vencido: '#dc2626', hoy: '#d97706', proximo: '#2563eb' };
-  let url = '';
-  try { url = ScriptApp.getService().getUrl(); } catch (e) { url = ''; }
+  const url = APP_URL;
 
   const filas = pendientes.map(function (c) {
     const det = c.subs.filter(function (s) { return ['vencido', 'hoy', 'proximo'].indexOf(s.estado) >= 0; })
