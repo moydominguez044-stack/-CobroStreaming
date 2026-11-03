@@ -4,6 +4,8 @@ App web en **Google Apps Script** para llevar el control de cobros de cuentas de
 
 > Creada y de autoría del Ing. Moisés Mendoza.
 
+**Abrir la app:** https://moydominguez044-stack.github.io/-CobroStreaming/ (redirige a la aplicación web de Apps Script)
+
 ## Qué hace
 
 - **Cobros del día:** muestra quién está vencido, a quién le vence hoy y a quién le vence pronto, con el total a cobrar.
@@ -18,9 +20,9 @@ App web en **Google Apps Script** para llevar el control de cobros de cuentas de
 ## Instalación
 
 1. Entra a [script.google.com](https://script.google.com) y crea un **Proyecto nuevo**. Ponle de nombre *Cobros Streaming*.
-2. Pega el contenido de `Code.gs` en el archivo `Código.gs`.
-3. Crea un archivo **HTML** llamado exactamente `Index` y pega `Index.html`.
-4. En **Configuración del proyecto** ⚙️, activa *"Mostrar el archivo de manifiesto appsscript.json"* y reemplaza su contenido con `appsscript.json`.
+2. Pega el contenido de `apps-script/Code.gs` en el archivo `Código.gs`.
+3. Crea un archivo **HTML** llamado exactamente `Index` y pega `apps-script/Index.html`.
+4. En **Configuración del proyecto** ⚙️, activa *"Mostrar el archivo de manifiesto appsscript.json"* y reemplaza su contenido con `apps-script/appsscript.json`.
 5. Ve a **Implementar → Nueva implementación → Aplicación web**:
    - *Ejecutar como:* **Usuario que accede a la aplicación web**
    - *Quién tiene acceso:* **Cualquier usuario con cuenta de Google**
@@ -44,6 +46,7 @@ Mándales la misma URL. Cada uno entra con su cuenta de Google y la app le crea 
 
 | Archivo | Contenido |
 |---|---|
-| `Code.gs` | Datos en Google Sheets, cálculo de vencimientos y meses acumulados, mensajes, resumen diario |
-| `Index.html` | Interfaz móvil: Cobros, Clientes, Servicios, Pagos, Ajustes |
-| `appsscript.json` | Zona horaria (America/Managua) y configuración de la aplicación web |
+| `apps-script/Code.gs` | Datos en Google Sheets, cálculo de vencimientos y meses acumulados, mensajes, resumen diario |
+| `apps-script/Index.html` | Interfaz móvil: Cobros, Clientes, Servicios, Pagos, Ajustes |
+| `apps-script/appsscript.json` | Zona horaria (America/Managua) y configuración de la aplicación web |
+| `index.html` | Página de GitHub Pages que redirige a la app |
