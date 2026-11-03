@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cobros Streaming</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f3fb; --card:#ffffff; --ink:#16142b; --muted:#6b6886; --line:#e6e3f3;
+  --brand:#4338ca; --brand-2:#6d28d9; --brand-soft:#ece9ff;
+  --wa:#1fae55; --wa-dark:#178a43;
+  --red:#dc2626; --red-soft:#fde8e8; --amber:#b45309; --amber-soft:#fef3c7;
+  --blue:#2563eb; --blue-soft:#e0ecff; --green:#15803d; --green-soft:#dcfce7; --gray-soft:#eeedf3;
+  --radius:16px; --shadow:0 1px 2px rgba(22,20,43,.06),0 4px 16px rgba(22,20,43,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f0e1a; --card:#1a1830; --ink:#f1f0fa; --muted:#a19dbd; --line:#2c2948;
+    --brand:#8b83ff; --brand-2:#a78bfa; --brand-soft:#26224a;
+    --red:#f87171; --red-soft:#3a1b22; --amber:#fbbf24; --amber-soft:#3a2e12;
+    --blue:#7aa7ff; --blue-soft:#1b2747; --green:#4ade80; --green-soft:#16301f; --gray-soft:#24223a;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{max-width:720px;margin:0 auto;padding-bottom:96px;min-height:100vh}
+
+/* Encabezado */
+.top{background:linear-gradient(135deg,#312e81 0%,#4338ca 55%,#6d28d9 100%);color:#fff;padding:18px 16px 56px;border-radius:0 0 26px 26px}
+.top h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.top .sub{opacity:.8;font-size:13px;margin-top:2px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:-42px 16px 0;position:relative}
+@media(min-width:560px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--card);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+.kpi .l{font-size:11.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-size:20px;font-weight:800;margin-top:2px;letter-spacing:-.02em}
+.kpi .v.red{color:var(--red)} .kpi .v.green{color:var(--green)}
+
+.section{padding:18px 16px 0}
+.row{display:flex;align-items:center;gap:8px}
+.between{justify-content:space-between}
+.h2{font-size:17px;font-weight:800;margin:0}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
+.chip{border:1px solid var(--line);background:var(--card);padding:7px 13px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin-top:12px}
+.card.click{cursor:pointer}
+.name{font-weight:700;font-size:16px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.b-vencido{background:var(--red-soft);color:var(--red)}
+.b-hoy{background:var(--amber-soft);color:var(--amber)}
+.b-proximo{background:var(--blue-soft);color:var(--blue)}
+.b-aldia{background:var(--green-soft);color:var(--green)}
+.b-pausada,.b-sin{background:var(--gray-soft);color:var(--muted)}
+.lines{margin:10px 0 0;padding:0;list-style:none}
+.lines li{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;padding:5px 0;border-top:1px dashed var(--line)}
+.lines li:first-child{border-top:0}
+.dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px;margin-top:5px}
+.total{font-size:18px;font-weight:800;letter-spacing:-.02em}
+.actions{display:flex;gap:8px;margin-top:12px}
+
+.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;font-size:14px}
+.btn.wa{background:var(--wa);color:#fff;flex:1}
+.btn.wa:active{background:var(--wa-dark)}
+.btn.wa.done{background:var(--green-soft);color:var(--green)}
+.btn.pri{background:var(--brand);color:#fff}
+.btn.sec{background:var(--brand-soft);color:var(--brand)}
+.btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.btn.danger{background:var(--red-soft);color:var(--red)}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.icon{width:18px;height:18px;flex:0 0 18px}
+
+.empty{text-align:center;padding:36px 16px;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+
+/* Navegación inferior */
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:20}
+.nav .in{display:flex;max-width:720px;width:100%}
+.nav button{flex:1;background:none;border:0;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:10px}
+.nav button.on{color:var(--brand)}
+.nav button svg{width:22px;height:22px}
+.fab{position:fixed;right:18px;bottom:84px;width:54px;height:54px;border-radius:18px;background:var(--brand);color:#fff;border:0;box-shadow:0 8px 24px rgba(67,56,202,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:19}
+.fab svg{width:26px;height:26px}
+
+/* Formularios */
+label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin:12px 0 5px}
+.in-f{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:11px 12px;outline:none}
+.in-f:focus{border-color:var(--brand);background:var(--card)}
+textarea.in-f{min-height:150px;resize:vertical;line-height:1.45}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.search{margin-top:12px}
+
+/* Modal (hoja inferior) */
+.overlay{position:fixed;inset:0;background:rgba(15,14,26,.5);display:none;align-items:flex-end;justify-content:center;z-index:40}
+.overlay.show{display:flex}
+.sheet{background:var(--card);width:100%;max-width:720px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:8px 16px calc(18px + env(safe-area-inset-bottom));animation:up .2s ease}
+@keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+.grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 10px}
+.sheet h3{margin:0 0 4px;font-size:18px;font-weight:800}
+.foot{display:flex;gap:8px;margin-top:18px}
+.foot .btn{flex:1}
+
+.payrow{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
+.stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stepper button{width:38px;height:40px;border:0;background:var(--bg);font-size:18px;font-weight:700;cursor:pointer}
+.stepper span{min-width:34px;text-align:center;font-weight:800}
+
+.listrow{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)}
+.listrow:first-child{border-top:0}
+.grow{flex:1;min-width:0}
+.ellip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swatch{width:34px;height:34px;border-radius:10px;flex:0 0 34px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px}
+.preview{white-space:pre-wrap;background:#e7fbe9;color:#0b3d1d;border-radius:12px 12px 12px 2px;padding:10px 12px;font-size:13.5px;line-height:1.45;margin-top:8px}
+@media (prefers-color-scheme: dark){.preview{background:#123222;color:#d2f5dc}}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
+.switch input{width:46px;height:26px;appearance:none;background:var(--line);border-radius:99px;position:relative;cursor:pointer;transition:.2s;flex:0 0 46px}
+.switch input:checked{background:var(--brand)}
+.switch input::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.2s}
+.switch input:checked::after{left:23px}
+
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:13.5px;z-index:60;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:80;flex-direction:column;gap:14px}
+.loader.hide{display:none}
+.spin{width:36px;height:36px;border:4px solid var(--brand-soft);border-top-color:var(--brand);border-radius:50%;animation:s .8s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.busy{position:fixed;top:0;left:0;height:3px;background:var(--brand);z-index:90;width:0;transition:width .4s}
+.busy.on{width:80%}
+.credit{text-align:center;font-size:11.5px;color:var(--muted);padding:22px 16px 6px}
+</style>
+</head>
+<body>
+<div class="loader" id="loader"><div class="spin"></div><div class="muted small">Cargando tus cobros…</div></div>
+<div class="busy" id="busy"></div>
+<div class="app" id="app"></div>
+<button class="fab" id="fab" aria-label="Agregar"></button>
+<nav class="nav"><div class="in" id="nav"></div></nav>
+<div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Íconos ---------- */
+const I = {
+  cobros:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg>',
+  clientes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7M16 3.5a4 4 0 0 1 0 8M22 21c0-3-1.7-5.4-4-6.5"/></svg>',
+  servicios:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4M10 8.5v5l4-2.5z"/></svg>',
+  pagos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
+  ajustes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  wa:'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>',
+  pay:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  check:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+};
+
+const TABS = [
+  ['cobros','Cobros'],['clientes','Clientes'],['servicios','Servicios'],['pagos','Pagos'],['ajustes','Ajustes']
+];
+const ESTADOS = {vencido:'Vencido', hoy:'Vence hoy', proximo:'Por vencer', aldia:'Al día', pausada:'Pausada', sin:'Sin cuentas'};
+const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+const S = { data:null, tab:'cobros', filtro:'pendientes', q:'', mesPagos:'' };
+
+/* ---------- Utilidades ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function money(n){
+  const m = S.data?.config?.moneda || '';
+  const v = Math.round(Number(n||0)*100)/100;
+  const t = v.toLocaleString('en-US',{minimumFractionDigits: v%1 ? 2 : 0, maximumFractionDigits:2});
+  return (m ? m+' ' : '') + t;
+}
+function fecha(s){ if(!s) return '—'; const [y,m,d]=s.split('-').map(Number); return d+' '+MESES_L[m-1].slice(0,3)+(y!==Number(S.data.hoy.slice(0,4))?' '+y:''); }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600); }
+function api(fn, ...args){
+  $('busy').classList.add('on');
+  return new Promise((res,rej)=>{
+    google.script.run
+      .withSuccessHandler(r=>{ $('busy').classList.remove('on'); res(r); })
+      .withFailureHandler(e=>{ $('busy').classList.remove('on'); toast(e.message || 'Ocurrió un error'); rej(e); })[fn](...args);
+  });
+}
+async function act(fn, ...args){ const d = await api(fn, ...args); if (d && d.clientes) { S.data = d; render(); } return d; }
+function initials(n){ return String(n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function svc(id){ return S.data.servicios.find(s=>s.id===id); }
+function cli(id){ return S.data.clientes.find(c=>c.id===id); }
+
+/* ---------- Render principal ---------- */
+function render(){
+  const d = S.data, r = d.resumen;
+  $('nav').innerHTML = TABS.map(([k,l])=>`<button class="${S.tab===k?'on':''}" onclick="go('${k}')">${I[k]}<span>${l}</span></button>`).join('');
+  const fabTabs = {clientes:'nuevoCliente()', servicios:'editServicio()', cobros:'nuevoCliente()'};
+  const fab = $('fab');
+  fab.style.display = fabTabs[S.tab] ? 'flex' : 'none';
+  fab.innerHTML = I.plus; fab.onclick = () => eval(fabTabs[S.tab]);
+
+  let html = `
+  <header class="top">
+    <h1>📺 ${esc(d.config.negocio || 'Cobros Streaming')}</h1>
+    <div class="sub">${cap(new Date(d.hoy+'T12:00:00').toLocaleDateString('es-NI',{weekday:'long',day:'numeric',month:'long'}))}</div>
+  </header>
+  <div class="kpis">
+    <div class="kpi"><div class="l">Por cobrar</div><div class="v ${r.porCobrar?'red':''}">${money(r.porCobrar)}</div></div>
+    <div class="kpi"><div class="l">Cobrado este mes</div><div class="v green">${money(r.cobradoMes)}</div></div>
+    <div class="kpi"><div class="l">Vencidos / hoy</div><div class="v">${r.vencidos} <span class="muted" style="font-size:14px">/ ${r.hoy}</span></div></div>
+    <div class="kpi"><div class="l">Ingreso mensual</div><div class="v">${money(r.ingresoMensual)}</div></div>
+  </div>`;
+
+  html += ({cobros:vCobros, clientes:vClientes, servicios:vServicios, pagos:vPagos, ajustes:vAjustes})[S.tab]();
+  html += `<div class="credit">Creada y de autoría del Ing. Moisés Mendoza</div>`;
+  $('app').innerHTML = html;
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function go(t){ S.tab=t; render(); window.scrollTo(0,0); }
+
+/* ---------- Cobros ---------- */
+function vCobros(){
+  const d = S.data;
+  const pend = c => ['vencido','hoy','proximo'].includes(c.estado);
+  const filtros = [
+    ['pendientes','Por cobrar', d.clientes.filter(pend).length],
+    ['vencido','Vencidos', d.clientes.filter(c=>c.estado==='vencido').length],
+    ['proximo','Por vencer', d.clientes.filter(c=>c.estado==='proximo'||c.estado==='hoy').length],
+    ['todos','Todos', d.clientes.length]
+  ];
+  let lista = d.clientes;
+  if (S.filtro==='pendientes') lista = lista.filter(pend);
+  else if (S.filtro==='vencido') lista = lista.filter(c=>c.estado==='vencido');
+  else if (S.filtro==='proximo') lista = lista.filter(c=>c.estado==='proximo'||c.estado==='hoy');
+
+  let h = `<div class="section">
+    <div class="chips">${filtros.map(([k,l,n])=>`<button class="chip ${S.filtro===k?'on':''}" onclick="S.filtro='${k}';render()">${l} · ${n}</button>`).join('')}</div>`;
+
+  if (!d.clientes.length) {
+    h += `<div class="card empty"><b>Aún no tienes clientes</b>Agrega tu primer cliente y asígnale sus cuentas de streaming.<br><br>
+      <button class="btn pri" onclick="nuevoCliente()">${I.plus.replace('<svg','<svg class="icon"')} Agregar cliente</button></div>`;
+  } else if (!lista.length) {
+    h += `<div class="card empty"><b>¡Todo al día! 🎉</b>No hay cobros pendientes en este filtro.</div>`;
+  }
+  lista.forEach(c => h += cardCobro(c));
+  return h + '</div>';
+}
+
+function cardCobro(c){
+  const subs = c.subs.filter(s=>s.estado!=='pausada');
+  const conCobro = subs.filter(s=>['vencido','hoy','proximo'].includes(s.estado));
+  const mostrar = conCobro.length ? conCobro : subs;
+  const lineas = mostrar.map(s=>{
+    let det;
+    if (s.estado==='vencido') det = `<b style="color:var(--red)">${s.mesesPendientes} ${s.mesesPendientes===1?'mes':'meses'}</b> (${s.pendientes.join(', ')}) · ${money(s.deuda)}`;
+    else if (s.estado==='hoy') det = `Vence hoy · ${money(s.precioEfectivo)}`;
+    else if (s.estado==='proximo') det = `Vence ${s.diasParaVencer===1?'mañana':'el '+fecha(s.vencimiento)} · ${money(s.precioEfectivo)}`;
+    else det = `Próximo pago ${fecha(s.vencimiento)} · ${money(s.precioEfectivo)}`;
+    return `<li><span class="dot" style="background:${esc(s.color)}"></span><div class="grow"><b>${esc(s.servicioNombre)}</b>${s.perfil?` <span class="muted">· ${esc(s.perfil)}</span>`:''}<div class="muted small">${det}</div></div></li>`;
+  }).join('') || `<li class="muted small">Sin cuentas asignadas.</li>`;
+
+  const total = conCobro.length ? c.total : 0;
+  const waBtn = c.wa
+    ? `<a class="btn wa ${c.avisadoHoy?'done':''}" href="${esc(c.wa)}" target="_blank" rel="noopener" onclick="avisado('${c.id}')">${c.avisadoHoy?I.check+' Avisado hoy':I.wa+' Recordar por WhatsApp'}</a>`
+    : `<button class="btn ghost" style="flex:1" onclick="editCliente('${c.id}')">Agregar teléfono</button>`;
+
+  return `<div class="card">
+    <div class="row between">
+      <div class="grow"><div class="name ellip">${esc(c.nombre)}</div><div class="muted small">${esc(c.telefono||'Sin teléfono')}</div></div>
+      <span class="badge b-${c.estado}">${ESTADOS[c.estado]}</span>
+    </div>
+    <ul class="lines">${lineas}</ul>
+    ${total?`<div class="row between" style="margin-top:8px"><span class="muted small">Total a cobrar</span><span class="total">${money(total)}</span></div>`:''}
+    <div class="actions">
+      ${waBtn}
+      ${subs.length?`<button class="btn sec" onclick="pagar('${c.id}')">${I.pay} Pago</button>`:''}
+    </div>
+  </div>`;
+}
+
+function avisado(id){
+  const c = cli(id); if (c) c.avisadoHoy = true;
+  setTimeout(render, 400);
+  api('marcarAviso', id).catch(()=>{});
+}
+
+/* ---------- Registrar pago ---------- */
+function pagar(clienteId){
+  const c = cli(clienteId);
+  const subs = c.subs.filter(s=>s.estado!=='pausada');
+  const filas = subs.map(s=>{
+    const m = s.mesesPendientes || (['hoy','proximo'].includes(s.estado) ? 1 : (subs.length===1?1:0));
+    return {id:s.id, meses:m, precio:s.precioEfectivo, monto:m*s.precioEfectivo, manual:false, s};
+  });
+  S.pago = {clienteId, filas};
+  openSheet(`
+    <h3>Registrar pago</h3>
+    <div class="muted small">${esc(c.nombre)} · cada mes pagado adelanta su próxima fecha de pago.</div>
+    <div id="payRows"></div>
+    <div class="grid2">
+      <div><label>Fecha del pago</label><input class="in-f" type="date" id="pFecha" value="${S.data.hoy}"></div>
+      <div><label>Nota (opcional)</label><input class="in-f" id="pNota" placeholder="Transferencia, efectivo…"></div>
+    </div>
+    <div class="row between" style="margin-top:16px"><span class="muted">Total recibido</span><span class="total" id="pTotal"></span></div>
+    <div class="foot"><button class="btn ghost" onclick="closeSheet()">Cancelar</button><button class="btn pri" id="pOk" onclick="guardarPago()">Guardar pago</button></div>
+  `);
+  drawPayRows();
+}
+function drawPayRows(){
+  const f = S.pago.filas;
+  $('payRows').innerHTML = f.map((r,i)=>{
+    const s = r.s;
+    const info = s.estado==='vencido' ? `<span style="color:var(--red);font-weight:700">Debe ${s.mesesPendientes} ${s.mesesPendientes===1?'mes':'meses'}</span>` : `Próx. ${fecha(s.vencimiento)}`;
+    const hasta = r.meses ? nuevoVenc(s.vencimiento, r.meses, s.diaCorte) : '';
+    return `<div class="payrow">
+      <div class="row between"><div class="grow"><b>${esc(s.servicioNombre)}</b>${s.perfil?` <span class="muted">· ${esc(s.perfil)}</span>`:''}<div class="muted small">${info} · ${money(s.precioEfectivo)}/mes</div></div>
+        <div class="stepper"><button onclick="stepMes(${i},-1)">−</button><span>${r.meses}</span><button onclick="stepMes(${i},1)">+</button></div></div>
+      <div class="grid2" style="align-items:end">
+        <div><label>Monto</label><input class="in-f" type="number" inputmode="decimal" min="0" step="any" value="${r.monto}" oninput="montoManual(${i},this.value)"></div>
+        <div class="muted small" style="padding-bottom:12px">${r.meses?`Próximo pago: <b>${fecha(hasta)}</b>`:'No se registra'}</div>
+      </div></div>`;
+  }).join('');
+  sumaPago();
+}
+function stepMes(i,d){ const r=S.pago.filas[i]; r.meses=Math.max(0,Math.min(24,r.meses+d)); if(!r.manual) r.monto=r.meses*r.precio; drawPayRows(); }
+function montoManual(i,v){ const r=S.pago.filas[i]; r.monto=Number(v)||0; r.manual=true; sumaPago(); }
+function sumaPago(){ $('pTotal').textContent = money(S.pago.filas.filter(r=>r.meses>0).reduce((a,r)=>a+r.monto,0)); }
+function nuevoVenc(base, n, dc){
+  const [y,m,d]=base.split('-').map(Number); const t=y*12+(m-1)+n; const Y=Math.floor(t/12), M=t%12+1;
+  const D=Math.min(Number(dc)||d, new Date(Date.UTC(Y,M,0)).getUTCDate());
+  return `${Y}-${String(M).padStart(2,'0')}-${String(D).padStart(2,'0')}`;
+}
+async function guardarPago(){
+  const lista = S.pago.filas.filter(r=>r.meses>0).map(r=>({suscripcionId:r.id, meses:r.meses, monto:r.monto, fecha:$('pFecha').value, nota:$('pNota').value}));
+  if (!lista.length) return toast('Indica al menos un mes a pagar');
+  $('pOk').disabled = true;
+  try { await act('registrarPagos', lista); closeSheet(); toast('Pago registrado ✅'); } catch(e){ $('pOk').disabled=false; }
+}
+
+/* ---------- Clientes ---------- */
+function vClientes(){
+  const q = S.q.toLowerCase();
+  const lista = S.data.clientes.filter(c=>!q || (c.nombre+' '+c.telefono).toLowerCase().includes(q))
+    .sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  let h = `<div class="section"><div class="row between"><h2 class="h2">Clientes</h2><span class="muted small">${S.data.clientes.length} · ${S.data.resumen.cuentas} cuentas</span></div>
+    <input class="in-f search" placeholder="Buscar por nombre o teléfono" value="${esc(S.q)}" oninput="S.q=this.value;clearTimeout(window._q);window._q=setTimeout(()=>{render();const i=document.querySelector('.search');i.focus();i.setSelectionRange(i.value.length,i.value.length)},250)">`;
+  if (!lista.length) h += `<div class="card empty"><b>${S.q?'Sin resultados':'Aún no tienes clientes'}</b>${S.q?'':'Toca el botón + para agregar el primero.'}</div>`;
+  else h += `<div class="card">` + lista.map(c=>`
+    <div class="listrow" style="cursor:pointer" onclick="editCliente('${c.id}')">
+      <div class="swatch" style="background:var(--brand)">${esc(initials(c.nombre))}</div>
+      <div class="grow"><div class="ellip" style="font-weight:700">${esc(c.nombre)}</div>
+        <div class="muted small ellip">${c.subs.map(s=>esc(s.servicioNombre)).join(', ') || 'Sin cuentas'}</div></div>
+      <span class="badge b-${c.estado}">${ESTADOS[c.estado]}</span>
+    </div>`).join('') + `</div>`;
+  return h + '</div>';
+}
+
+function nuevoCliente(){ editCliente(null); }
+function editCliente(id){
+  const c = id ? cli(id) : {nombre:'',telefono:'',notas:'',subs:[]};
+  const subs = (c.subs||[]).map(s=>`
+    <div class="listrow" style="cursor:pointer" onclick="editSub('${s.id}')">
+      <span class="dot" style="background:${esc(s.color)};margin-top:0"></span>
+      <div class="grow"><b>${esc(s.servicioNombre)}</b>${s.perfil?` <span class="muted">· ${esc(s.perfil)}</span>`:''}
+        <div class="muted small">${money(s.precioEfectivo)}/mes · próx. ${fecha(s.vencimiento)}</div></div>
+      <span class="badge b-${s.estado}">${ESTADOS[s.estado]}</span>
+    </div>`).join('');
+  openSheet(`
+    <h3>${id?'Editar cliente':'Nuevo cliente'}</h3>
+    <label>Nombre</label><input class="in-f" id="cNombre" value="${esc(c.nombre)}" placeholder="Ej. Juan Pérez">
+    <label>WhatsApp</label><input class="in-f" id="cTel" type="tel" inputmode="tel" value="${esc(c.telefono)}" placeholder="8888 8888 (se agrega +${esc(S.data.config.codigoPais)})">
+    <label>Notas</label><input class="in-f" id="cNotas" value="${esc(c.notas)}" placeholder="Opcional">
+    ${id?`<div class="row between" style="margin-top:18px"><b>Cuentas</b><button class="btn sec" onclick="editSub(null,'${id}')">${I.plus.replace('<svg','<svg class="icon"')} Agregar cuenta</button></div>
+      <div>${subs || '<div class="muted small" style="padding:10px 0">Sin cuentas todavía.</div>'}</div>`:''}
+    <div class="foot">
+      ${id?`<button class="btn danger" onclick="borrarCliente('${id}')">Eliminar</button>`:`<button class="btn ghost" onclick="closeSheet()">Cancelar</button>`}
+      <button class="btn pri" onclick="guardarCliente(${id?`'${id}'`:'null'})">${id?'Guardar':'Guardar y agregar cuenta'}</button>
+    </div>`);
+  setTimeout(()=>{ if(!id) $('cNombre').focus(); }, 150);
+}
+async function guardarCliente(id){
+  const nombre = $('cNombre').value.trim();
+  if (!nombre) return toast('Escribe el nombre');
+  const antes = new Set(S.data.clientes.map(c=>c.id));
+  await act('saveCliente', {id, nombre, telefono:$('cTel').value, notas:$('cNotas').value});
+  if (id) { closeSheet(); toast('Cliente guardado'); }
+  else {
+    const nuevo = S.data.clientes.find(c=>!antes.has(c.id));
+    toast('Cliente agregado');
+    if (nuevo) editSub(null, nuevo.id); else closeSheet();
+  }
+}
+async function borrarCliente(id){
+  if (!confirm('¿Eliminar este cliente y todas sus cuentas? Los pagos quedan en el historial.')) return;
+  await act('deleteCliente', id); closeSheet(); toast('Cliente eliminado');
+}
+
+/* ---------- Cuentas (suscripciones) ---------- */
+function editSub(id, clienteId){
+  const s = id ? S.data.suscripciones.find(x=>x.id===id) : {clienteId, servicioId:'', perfil:'', precio:'', vencimiento:S.data.hoy, activo:'si'};
+  const c = cli(s.clienteId);
+  const servs = S.data.servicios.filter(x=>x.activo!=='no' || x.id===s.servicioId);
+  if (!servs.length) { toast('Primero agrega un servicio'); return go('servicios'); }
+  openSheet(`
+    <h3>${id?'Editar cuenta':'Nueva cuenta'}</h3>
+    <div class="muted small">${esc(c?c.nombre:'')}</div>
+    <label>Servicio</label>
+    <select class="in-f" id="sServ" onchange="phPrecio()">${servs.map(v=>`<option value="${v.id}" ${v.id===s.servicioId?'selected':''}>${esc(v.nombre)}${Number(v.precio)?' — '+money(v.precio):''}</option>`).join('')}</select>
+    <div class="grid2">
+      <div><label>Perfil / correo</label><input class="in-f" id="sPerfil" value="${esc(s.perfil)}" placeholder="Perfil 2"></div>
+      <div><label>Precio especial</label><input class="in-f" id="sPrecio" type="number" inputmode="decimal" step="any" value="${esc(s.precio)}"></div>
+    </div>
+    <label>${id?'Próxima fecha de pago':'Fecha del primer cobro'}</label>
+    <input class="in-f" id="sVenc" type="date" value="${esc(s.vencimiento)}">
+    <div class="muted small" style="margin-top:6px">Se cobra cada mes ese mismo día. Si pones una fecha pasada, la app calcula los meses acumulados.</div>
+    <div class="switch"><span><b>Activa</b><div class="muted small">Si la pausas no genera cobros.</div></span><input type="checkbox" id="sAct" ${s.activo!=='no'?'checked':''}></div>
+    <div class="foot">
+      ${id?`<button class="btn danger" onclick="borrarSub('${id}','${s.clienteId}')">Eliminar</button>`:`<button class="btn ghost" onclick="editCliente('${s.clienteId}')">Cancelar</button>`}
+      <button class="btn pri" onclick="guardarSub(${id?`'${id}'`:'null'},'${s.clienteId}')">Guardar</button>
+    </div>`);
+  phPrecio();
+}
+function phPrecio(){ const v=svc($('sServ').value); $('sPrecio').placeholder = v && Number(v.precio) ? String(v.precio)+' (del servicio)' : 'Precio'; }
+async function guardarSub(id, clienteId){
+  const servicioId = $('sServ').value, v = svc(servicioId);
+  const precio = $('sPrecio').value;
+  if (precio==='' && !Number(v.precio)) return toast('Este servicio no tiene precio: ponle precio aquí o en Servicios');
+  const venc = $('sVenc').value;
+  if (!venc) return toast('Indica la fecha de pago');
+  await act('saveSuscripcion', {id, clienteId, servicioId, perfil:$('sPerfil').value, precio, vencimiento:venc, diaCorte:Number(venc.slice(8)), activo:$('sAct').checked?'si':'no'});
+  toast('Cuenta guardada'); editCliente(clienteId);
+}
+async function borrarSub(id, clienteId){
+  if (!confirm('¿Eliminar esta cuenta?')) return;
+  await act('deleteSuscripcion', id); toast('Cuenta eliminada'); editCliente(clienteId);
+}
+
+/* ---------- Servicios ---------- */
+function vServicios(){
+  const cuenta = id => S.data.suscripciones.filter(s=>s.servicioId===id && s.activo!=='no').length;
+  let h = `<div class="section"><div class="row between"><h2 class="h2">Servicios y precios</h2></div>
+    <div class="muted small" style="margin-top:4px">Si cambias un precio aquí, se actualiza en todas las cuentas que no tengan precio especial.</div>
+    <div class="card">`;
+  h += S.data.servicios.map(v=>`
+    <div class="listrow" style="cursor:pointer" onclick="editServicio('${v.id}')">
+      <div class="swatch" style="background:${esc(v.color)}">${esc(initials(v.nombre).slice(0,1))}</div>
+      <div class="grow"><b>${esc(v.nombre)}</b> ${v.activo==='no'?'<span class="badge b-pausada">Oculto</span>':''}<div class="muted small">${cuenta(v.id)} cuenta(s) activa(s)</div></div>
+      <div style="font-weight:800">${Number(v.precio)?money(v.precio):'<span class="badge b-hoy">Sin precio</span>'}</div>
+    </div>`).join('') || '<div class="empty">Sin servicios</div>';
+  return h + '</div></div>';
+}
+function editServicio(id){
+  const v = id ? svc(id) : {nombre:'', precio:'', color:'#6366f1', activo:'si'};
+  openSheet(`
+    <h3>${id?'Editar servicio':'Nuevo servicio'}</h3>
+    <label>Nombre</label><input class="in-f" id="vNombre" value="${esc(v.nombre)}" placeholder="Ej. Netflix">
+    <div class="grid2">
+      <div><label>Precio mensual (${esc(S.data.config.moneda)})</label><input class="in-f" id="vPrecio" type="number" inputmode="decimal" step="any" value="${esc(v.precio)}"></div>
+      <div><label>Color</label><input class="in-f" id="vColor" type="color" value="${esc(v.color||'#6366f1')}" style="height:46px;padding:4px"></div>
+    </div>
+    <div class="switch"><span><b>Visible</b><div class="muted small">Ocúltalo si ya no lo vendes.</div></span><input type="checkbox" id="vAct" ${v.activo!=='no'?'checked':''}></div>
+    <div class="foot">
+      ${id?`<button class="btn danger" onclick="borrarServicio('${id}')">Eliminar</button>`:`<button class="btn ghost" onclick="closeSheet()">Cancelar</button>`}
+      <button class="btn pri" onclick="guardarServicio(${id?`'${id}'`:'null'})">Guardar</button>
+    </div>`);
+}
+async function guardarServicio(id){
+  const nombre=$('vNombre').value.trim(); if(!nombre) return toast('Escribe el nombre');
+  await act('saveServicio',{id, nombre, precio:$('vPrecio').value, color:$('vColor').value, activo:$('vAct').checked?'si':'no'});
+  closeSheet(); toast('Servicio guardado');
+}
+async function borrarServicio(id){ if(!confirm('¿Eliminar este servicio?')) return; await act('deleteServicio', id); closeSheet(); toast('Servicio eliminado'); }
+
+/* ---------- Pagos ---------- */
+function vPagos(){
+  const mes = S.mesPagos || S.data.hoy.slice(0,7);
+  const lista = S.data.pagos.filter(p=>String(p.fecha).slice(0,7)===mes);
+  const total = lista.reduce((a,p)=>a+(Number(p.monto)||0),0);
+  const subMap = Object.fromEntries(S.data.suscripciones.map(s=>[s.id,s]));
+  const allCli = Object.fromEntries(S.data.clientes.map(c=>[c.id,c]));
+  let h = `<div class="section"><div class="row between"><h2 class="h2">Historial de pagos</h2>
+      <input type="month" class="in-f" style="width:auto;padding:8px 10px" value="${mes}" onchange="S.mesPagos=this.value;render()"></div>
+    <div class="card row between"><span class="muted">${lista.length} pago(s) en el mes</span><span class="total" style="color:var(--green)">${money(total)}</span></div>`;
+  if (!lista.length) h += `<div class="card empty"><b>Sin pagos este mes</b>Los pagos que registres aparecerán aquí.</div>`;
+  else h += `<div class="card">` + lista.map(p=>{
+    const s = subMap[p.suscripcionId], c = allCli[p.clienteId];
+    return `<div class="listrow">
+      <span class="dot" style="background:${esc(s?s.color:'#999')};margin-top:0"></span>
+      <div class="grow"><b class="ellip">${esc(c?c.nombre:'(cliente eliminado)')}</b>
+        <div class="muted small">${esc(s?s.servicioNombre:'Cuenta eliminada')} · ${p.meses} ${Number(p.meses)===1?'mes':'meses'} · ${fecha(p.fecha)}${p.nota?' · '+esc(p.nota):''}</div></div>
+      <div style="text-align:right"><b>${money(p.monto)}</b><div><button class="btn ghost" style="padding:4px 8px;font-size:12px;margin-top:4px" onclick="anularPago('${p.id}')">Anular</button></div></div>
+    </div>`;}).join('') + `</div>`;
+  return h + '</div>';
+}
+async function anularPago(id){
+  if(!confirm('¿Anular este pago? La fecha de pago de la cuenta regresa a la anterior.')) return;
+  await act('deletePago', id); toast('Pago anulado');
+}
+
+/* ---------- Ajustes ---------- */
+function vAjustes(){
+  const c = S.data.config;
+  return `<div class="section"><h2 class="h2">Ajustes</h2>
+  <div class="card">
+    <label>Nombre de tu negocio</label><input class="in-f" id="aNeg" value="${esc(c.negocio)}">
+    <div class="grid2">
+      <div><label>Moneda</label><input class="in-f" id="aMon" value="${esc(c.moneda)}"></div>
+      <div><label>Código de país</label><input class="in-f" id="aPais" inputmode="numeric" value="${esc(c.codigoPais)}"></div>
+    </div>
+    <label>Avisar cuántos días antes del vencimiento</label><input class="in-f" id="aDias" type="number" min="0" max="15" value="${esc(c.diasAntes)}">
+    <label>Mensaje de WhatsApp</label>
+    <textarea class="in-f" id="aPlant" oninput="prevPlant()">${esc(c.plantilla)}</textarea>
+    <div class="muted small" style="margin-top:6px">Variables: <code>{nombre}</code> <code>{nombreCompleto}</code> <code>{detalle}</code> <code>{total}</code> <code>{meses}</code> <code>{negocio}</code>. Usa *texto* para negrita en WhatsApp.</div>
+    <label>Vista previa</label><div class="preview" id="aPrev"></div>
+    <div class="foot"><button class="btn pri" onclick="guardarAjustes()">Guardar ajustes</button></div>
+  </div>
+  <div class="card">
+    <div class="switch" style="padding-top:0"><span><b>Resumen diario por correo</b><div class="muted small">Cada mañana te llega a ${esc(S.data.email)} la lista de cobros del día con botones de WhatsApp listos.</div></span>
+      <input type="checkbox" ${S.data.resumenActivo?'checked':''} onchange="toggleResumen(this.checked)"></div>
+    <label>Hora del resumen</label>
+    <select class="in-f" id="aHora" onchange="guardarAjustes(true)">${Array.from({length:24},(_,h)=>`<option value="${h}" ${Number(c.horaResumen)===h?'selected':''}>${(h%12||12)}:00 ${h<12?'a. m.':'p. m.'}</option>`).join('')}</select>
+  </div>
+  <div class="card row between"><div><b>Tus datos</b><div class="muted small">Se guardan en una hoja de Google en tu Drive.</div></div>
+    <a class="btn sec" href="${esc(S.data.ssUrl)}" target="_blank" rel="noopener">Abrir hoja</a></div>
+  </div>`;
+}
+function prevPlant(){
+  const el = $('aPrev'); if(!el) return;
+  const c = S.data.clientes.find(x=>['vencido','hoy','proximo'].includes(x.estado)) || S.data.clientes[0];
+  const det = c ? c.subs.filter(s=>s.estado!=='pausada').map(s=>s.linea).join('\n') : '• Netflix (Perfil 2): 2 meses (oct, nov) — '+money(300);
+  el.textContent = $('aPlant').value
+    .replace(/\{nombre\}/g, c ? c.nombre.split(' ')[0] : 'Juan')
+    .replace(/\{nombreCompleto\}/g, c ? c.nombre : 'Juan Pérez')
+    .replace(/\{detalle\}/g, det)
+    .replace(/\{total\}/g, money(c ? (c.total || c.subs.reduce((a,s)=>a+s.precioEfectivo,0)) : 300))
+    .replace(/\{meses\}/g, c ? c.mesesPendientes : 2)
+    .replace(/\{negocio\}/g, $('aNeg').value);
+}
+async function guardarAjustes(silencio){
+  const o = {horaResumen:$('aHora').value};
+  if ($('aNeg')) Object.assign(o, {negocio:$('aNeg').value, moneda:$('aMon').value, codigoPais:$('aPais').value.replace(/\D/g,''), diasAntes:$('aDias').value||'0', plantilla:$('aPlant').value});
+  await act('saveConfig', o); toast(silencio ? 'Hora actualizada' : 'Ajustes guardados');
+}
+async function toggleResumen(on){ await act('activarResumen', on); toast(on?'Resumen diario activado 📬':'Resumen diario desactivado'); }
+
+/* ---------- Hoja inferior ---------- */
+function openSheet(html){ $('sheet').innerHTML = '<div class="grab"></div>'+html; $('overlay').classList.add('show'); document.body.style.overflow='hidden'; }
+function closeSheet(){ $('overlay').classList.remove('show'); document.body.style.overflow=''; }
+$('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeSheet(); });
+
+/* ---------- Inicio ---------- */
+const _render = render;
+render = function(){ _render(); if (S.tab==='ajustes') prevPlant(); };
+api('getData').then(d=>{ S.data=d; $('loader').classList.add('hide'); render(); })
+  .catch(()=>{ $('loader').innerHTML='<div class="empty"><b>No se pudo cargar</b>Recarga la página.</div>'; });
+</script>
+</body>
+</html>
