@@ -4,7 +4,7 @@ App web en **Google Apps Script** para llevar el control de cobros de cuentas de
 
 > Creada y de autoría del Ing. Moisés Mendoza.
 
-**Abrir la app:** https://moydominguez044-stack.github.io/-CobroStreaming/ (redirige a la aplicación web de Apps Script)
+**Abrir la app:** https://moydominguez044-stack.github.io/-CobroStreaming/ (muestra la app de Apps Script dentro de la página; si el navegador no deja iniciar sesión dentro de ella, usa el botón *Abrir en Google*)
 
 ## Qué hace
 
@@ -49,4 +49,4 @@ Mándales la misma URL. Cada uno entra con su cuenta de Google y la app le crea 
 | `apps-script/Code.gs` | Datos en Google Sheets, cálculo de vencimientos y meses acumulados, mensajes, resumen diario |
 | `apps-script/Index.html` | Interfaz móvil: Cobros, Clientes, Servicios, Pagos, Ajustes |
 | `apps-script/appsscript.json` | Zona horaria (America/Managua) y configuración de la aplicación web |
-| `index.html` | Página de GitHub Pages que redirige a la app |
+| `index.html` | Página de GitHub Pages que muestra la app dentro (iframe) |
