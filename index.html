@@ -192,12 +192,12 @@ function money(n){
   return (m ? m+' ' : '') + t;
 }
 function fecha(s){ if(!s) return '—'; const [y,m,d]=s.split('-').map(Number); return d+' '+MESES_L[m-1].slice(0,3)+(y!==Number(S.data.hoy.slice(0,4))?' '+y:''); }
-function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600); }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'), msg.length>60?6000:2600); }
 const DEFAULT_SERVER = "https://script.google.com/macros/s/AKfycbza5C2hjNLXl6PSixXslbEB65P0LQEC28Tew2CSydozfMJytGPhPPe-XNOfkGgjyMO8/exec";
 const LS = { get(k,d){ try{ const v=localStorage.getItem('cs_'+k); return v===null?d:v; }catch(e){ return d; } },
              set(k,v){ try{ localStorage.setItem('cs_'+k,v); }catch(e){} },
              del(k){ try{ localStorage.removeItem('cs_'+k); }catch(e){} } };
-let OFFLINE = false;
+let OFFLINE = false, ERROR_SERVIDOR = false;
 async function api(fn, ...args){
   const server = LS.get('server',''), key = LS.get('key','');
   if (!server || !key) { mostrarSetup(); throw new Error('Sin conexión configurada'); }
@@ -213,7 +213,12 @@ async function api(fn, ...args){
     if (fn !== 'getData' && OFFLINE) { OFFLINE = false; }
     return j.data;
   } catch (e) {
-    const msg = e instanceof TypeError ? 'Sin internet. Revisa tu conexión.' : (e.message || 'Ocurrió un error');
+    let msg = e.message || 'Ocurrió un error';
+    if (e instanceof TypeError || e instanceof SyntaxError) {
+      msg = navigator.onLine === false ? 'Sin internet. Revisa tu conexión.'
+        : 'El servidor no respondió bien. Revisa la implementación de Apps Script (Ejecutar como: Yo · Acceso: Cualquier usuario).';
+      ERROR_SERVIDOR = true;
+    }
     toast(msg); throw e;
   } finally { $('busy').classList.remove('on'); }
 }
@@ -232,7 +237,7 @@ function render(){
   fab.style.display = fabTabs[S.tab] ? 'flex' : 'none';
   fab.innerHTML = I.plus; fab.onclick = () => eval(fabTabs[S.tab]);
 
-  let html = (OFFLINE ? `<div class="offline">Sin conexión · mostrando los últimos datos guardados</div>` : '') + `
+  let html = (OFFLINE ? `<div class="offline">${navigator.onLine===false?'Sin internet':'No se pudo conectar al servidor'} · mostrando los últimos datos guardados · <a href="#" onclick="reintentar();return false" style="color:inherit">Reintentar</a></div>` : '') + `
   <header class="top">
     <h1>📺 ${esc(d.config.negocio || 'Cobros Streaming')}</h1>
     <div class="sub">${cap(new Date(d.hoy+'T12:00:00').toLocaleDateString('es-NI',{weekday:'long',day:'numeric',month:'long'}))}</div>
@@ -614,7 +619,7 @@ function vAjustes(){
   <div class="card row between"><div><b>Tus datos</b><div class="muted small">Se guardan en una hoja de Google en tu Drive.</div></div>
     <a class="btn sec" href="${esc(S.data.ssUrl)}" target="_blank" rel="noopener">Abrir hoja</a></div>
   <div class="card row between"><div class="grow"><b>Servidor</b><div class="muted small ellip">${esc(LS.get('server',''))}</div></div>
-    <button class="btn ghost" onclick="cerrarSesion()">Cambiar</button></div>
+    <div class="row"><button class="btn ghost" onclick="probarServidor()">Probar</button><button class="btn ghost" onclick="cerrarSesion()">Cambiar</button></div></div>
   </div>`;
 }
 function prevPlant(){
@@ -669,6 +674,8 @@ async function conectar(){
   $('stOk').disabled=true;
   try { await iniciar(); } catch(e){ const b=$('stOk'); if(b) b.disabled=false; }
 }
+async function reintentar(){ try { await iniciar(); toast('Conectado ✅'); } catch(e){} }
+function probarServidor(){ window.open(LS.get('server',''), '_blank'); }
 function cerrarSesion(){ if(!confirm('¿Desconectar este celular del servidor?')) return; LS.del('key'); LS.del('cache'); S.data=null; mostrarSetup(); }
 async function iniciar(){
   const d = await api('getData');

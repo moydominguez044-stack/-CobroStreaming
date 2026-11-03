@@ -1,5 +1,5 @@
 // Cobros Streaming — service worker: guarda la app para que abra rápido y sin señal.
-const CACHE = 'cobros-v2';
+const CACHE = 'cobros-v3';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
